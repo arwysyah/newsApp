@@ -18,6 +18,8 @@ import {INews} from './utils/index';
 import moment from 'moment';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList, Stacks} from '../screen/utils/index';
+import {useSelector, useDispatch} from 'react-redux';
+import {SET_GET_DATA} from '../redux/action';
 type Props = {
   navigation: StackNavigationProp<RootStackParamList, Stacks.home>;
 };
@@ -27,13 +29,16 @@ const spacing: number = 12;
 const SIZE: number = width * 0.62;
 const HEIGHT: number = SIZE - 90;
 const Home: FC<Props> = ({navigation}) => {
-  const [dataNews, setDataNews] = useState<INews[]>([]);
   const [loading, setLoading] = useState<Boolean>(true);
   const [text, setText] = useState<String>('');
   const [loadingList, setLoadingList] = useState<Boolean>(false);
   const [itemToRender, setItemToRender] = useState<number>(8);
   const scrollY = new Animated.Value(0);
   const diffClamp = Animated.diffClamp(scrollY, 0, 150);
+  const dispatch = useDispatch();
+  const globalState = useSelector(state => state);
+
+  const listData: INews[] = Object.values(globalState.data);
   const translateY = diffClamp.interpolate({
     inputRange: [0, 80],
     outputRange: [0, -80],
@@ -46,15 +51,17 @@ const Home: FC<Props> = ({navigation}) => {
     setLoading(true);
     axios
       .get(url + token)
-      .then((response: AxiosResponse) => setDataNews(response.data.articles))
+      .then((response: AxiosResponse) =>
+        dispatch(SET_GET_DATA(response.data.articles)),
+      )
       .then(() => setLoading(false))
       .catch(err => ToastAndroid.show(err.message, ToastAndroid.SHORT));
   };
-  const filterData: INews[] = dataNews.filter(item => {
+  const filterData: INews[] = listData?.filter((item: INews) => {
     return item.title.toLowerCase().indexOf(text.toLowerCase()) !== -1;
   });
   const handleScroll = (e: any): void => {
-    const length: number = filterData.length;
+    const length: number = listData?.length;
     const scrollPosition = e.nativeEvent.contentOffset.y;
     const scrollViewHeight = e.nativeEvent.layoutMeasurement.height;
     const contentHeight = e.nativeEvent.contentSize.height;
