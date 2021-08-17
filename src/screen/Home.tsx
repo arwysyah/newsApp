@@ -16,12 +16,17 @@ import axios, {AxiosResponse} from 'axios';
 import {url, token} from './config/index';
 import {INews} from './utils/index';
 import moment from 'moment';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList, Stacks} from '../screen/utils/index';
+type Props = {
+  navigation: StackNavigationProp<RootStackParamList, Stacks.home>;
+};
 const AnimatedFlatlist = Animated.createAnimatedComponent(FlatList);
 const {width} = Dimensions.get('window');
 const spacing: number = 12;
 const SIZE: number = width * 0.62;
 const HEIGHT: number = SIZE - 90;
-const Home: FC = () => {
+const Home: FC<Props> = ({navigation}) => {
   const [dataNews, setDataNews] = useState<INews[]>([]);
   const [loading, setLoading] = useState<Boolean>(true);
   const [text, setText] = useState<String>('');
@@ -78,10 +83,10 @@ const Home: FC = () => {
                   //   })
                   // }
                   style={{width: width * 0.6}}>
-                  <Text style={{color: 'white'}}>{item.author}</Text>
+                  <Text style={{color: 'black'}}>{item.author}</Text>
                   <Text
                     style={{
-                      color: 'white',
+                      color: 'black',
                       fontWeight: 'bold',
                       top: 10,
                     }}
@@ -100,10 +105,10 @@ const Home: FC = () => {
                         item: item,
                       })
                     }>
-                    <Text style={{color: 'white'}} numberOfLines={1}>
+                    <Text style={{color: 'black'}} numberOfLines={1}>
                       {item.description}
                     </Text>
-                    <Text style={{color: 'white', fontSize: 10}}>
+                    <Text style={{color: 'black', fontSize: 10}}>
                       {moment(item.publishedAt).format('LL')}
                     </Text>
                   </TouchableOpacity>
@@ -170,7 +175,7 @@ const Home: FC = () => {
         ) : null}
         <View>
           {filterData?.length > 0 ? (
-            <AnimatedFlatlist<INews>
+            <AnimatedFlatlist
               data={filterData}
               scrollEventThrottle={16}
               onMomentumScrollEnd={e => handleScroll(e)}
@@ -184,7 +189,7 @@ const Home: FC = () => {
               renderItem={renderItem}
             />
           ) : (
-            <Text>Data Not Found</Text>
+            <Text style={{color: 'black'}}>Data Not Found</Text>
           )}
         </View>
       </View>
@@ -227,7 +232,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   cardContainer: {
-    backgroundColor: 'black',
+    backgroundColor: 'white',
     opacity: 0.8,
     flexDirection: 'row',
     justifyContent: 'space-around',

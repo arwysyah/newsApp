@@ -1,11 +1,11 @@
 import React, {ReactNode} from 'react';
 
-import Home from './src/screen/Home';
+import IndexNavigation from './src/navigations/index';
 
 const App: ReactNode = () => {
   return (
     <>
-      <Home />
+      <IndexNavigation />
     </>
   );
 };
