@@ -77,11 +77,11 @@ const Home: FC<Props> = ({navigation}) => {
             <View style={styles.cardContainer}>
               <View style={{width: width * 0.8}}>
                 <TouchableOpacity
-                  // onPress={() =>
-                  //   navigation.navigate('Details', {
-                  //     item: item,
-                  //   })
-                  // }
+                  onPress={() =>
+                    navigation.navigate('Details', {
+                      item: item,
+                    })
+                  }
                   style={{width: width * 0.6}}>
                   <Text style={{color: 'black'}}>{item.author}</Text>
                   <Text
@@ -108,8 +108,8 @@ const Home: FC<Props> = ({navigation}) => {
                     <Text style={{color: 'black'}} numberOfLines={1}>
                       {item.description}
                     </Text>
-                    <Text style={{color: 'black', fontSize: 10}}>
-                      {moment(item.publishedAt).format('LL')}
+                    <Text style={{color: 'black', fontSize: 14, top: 30}}>
+                      {moment(item.publishedAt).format('LLLL')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -117,16 +117,15 @@ const Home: FC<Props> = ({navigation}) => {
 
               <View style={{alignItems: 'center', top: 20, marginLeft: -130}}>
                 <TouchableOpacity
-                // onPress={() =>
-                //   navigation.navigate('Details', {
-                //     item: item,
-                //   })
-                // }
-                >
+                  onPress={() =>
+                    navigation.navigate('Details', {
+                      item: item,
+                    })
+                  }>
                   <Image
                     source={{uri: item.urlToImage}}
                     resizeMode="cover"
-                    style={{height: 150, width: 100, borderRadius: 6}}
+                    style={styles.image}
                   />
                 </TouchableOpacity>
               </View>
@@ -136,6 +135,7 @@ const Home: FC<Props> = ({navigation}) => {
               <ActivityIndicator size="small" color="red" />
             </View>
           )}
+          <View style={{height: 40}}></View>
         </View>
       );
     }
@@ -174,22 +174,34 @@ const Home: FC<Props> = ({navigation}) => {
           />
         ) : null}
         <View>
-          {filterData?.length > 0 ? (
-            <AnimatedFlatlist
-              data={filterData}
-              scrollEventThrottle={16}
-              onMomentumScrollEnd={e => handleScroll(e)}
-              keyExtractor={(item, index) => index.toString()}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{alignItems: 'center'}}
-              bounces={false}
-              decelerationRate={0}
-              initialNumToRender={4}
-              onScroll={e => scrollY.setValue(e.nativeEvent.contentOffset.y)}
-              renderItem={renderItem}
-            />
+          {!loading ? (
+            <View>
+              {filterData?.length > 0 ? (
+                <AnimatedFlatlist
+                  data={filterData}
+                  scrollEventThrottle={16}
+                  onMomentumScrollEnd={e => handleScroll(e)}
+                  keyExtractor={(item, index) => index.toString()}
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{
+                    alignItems: 'center',
+                  }}
+                  bounces={false}
+                  decelerationRate={0}
+                  initialNumToRender={4}
+                  onScroll={e =>
+                    scrollY.setValue(e.nativeEvent.contentOffset.y)
+                  }
+                  renderItem={renderItem}
+                />
+              ) : (
+                <Text style={{color: 'black'}}>Data Not Found</Text>
+              )}
+            </View>
           ) : (
-            <Text style={{color: 'black'}}>Data Not Found</Text>
+            <View>
+              <ActivityIndicator size="large" color={'red'} />
+            </View>
           )}
         </View>
       </View>
@@ -240,6 +252,26 @@ const styles = StyleSheet.create({
     // borderRadius: 8,
     borderWidth: 0.3,
     borderColor: '#cfcfcf',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  image: {
+    height: 150,
+    width: 100,
+    borderRadius: 6,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   searchStockStyle: {
     height: 40,
