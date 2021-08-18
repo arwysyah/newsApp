@@ -1,0 +1,16 @@
+export const countryCode: Array<String> = [
+  'ae',
+  'ar',
+  'at',
+  'au',
+  'bg',
+  'br',
+  'ca',
+  'ch',
+  'cn',
+  'co',
+  'cu',
+  'cz',
+  'de',
+  'us',
+];

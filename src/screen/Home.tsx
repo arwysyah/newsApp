@@ -11,7 +11,11 @@ import {
   Image,
   Animated,
   TextInput,
+  Modal,
+  ScrollView,
+  TouchableWithoutFeedback,
 } from 'react-native';
+import {countryCode} from './utils/countryCode';
 import axios, {AxiosResponse} from 'axios';
 import {url, token} from './config/index';
 import {INews} from './utils/index';
@@ -20,23 +24,28 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList, Stacks} from '../screen/utils/index';
 import {useSelector, useDispatch} from 'react-redux';
 import {SET_GET_DATA} from '../redux/action';
+
+import MaterialCommunity from 'react-native-vector-icons/MaterialCommunityIcons';
 type Props = {
   navigation: StackNavigationProp<RootStackParamList, Stacks.home>;
 };
 const AnimatedFlatlist = Animated.createAnimatedComponent(FlatList);
-const {width} = Dimensions.get('window');
+const {height, width} = Dimensions.get('window');
 const spacing: number = 12;
 const SIZE: number = width * 0.62;
 const HEIGHT: number = SIZE - 90;
+
 const Home: FC<Props> = ({navigation}) => {
   const [loading, setLoading] = useState<Boolean>(true);
   const [text, setText] = useState<String>('');
+  const [country, setCountry] = useState<String>('us');
   const [loadingList, setLoadingList] = useState<Boolean>(false);
   const [itemToRender, setItemToRender] = useState<number>(8);
   const scrollY = new Animated.Value(0);
   const diffClamp = Animated.diffClamp(scrollY, 0, 150);
   const dispatch = useDispatch();
   const globalState = useSelector(state => state);
+  const [isModalVisible, setModalVisible] = useState(false);
 
   const listData: INews[] = Object.values(globalState.data);
   const translateY = diffClamp.interpolate({
@@ -44,22 +53,26 @@ const Home: FC<Props> = ({navigation}) => {
     outputRange: [0, -80],
   });
   useEffect(() => {
-    fetchNews();
+    fetchNews(country);
   }, []);
 
-  const fetchNews = () => {
+  const fetchNews = (params: String) => {
     setLoading(true);
+
     axios
-      .get(url + token)
+      .get(url + params + '&' + 'category=technology&apiKey=' + token)
       .then((response: AxiosResponse) =>
         dispatch(SET_GET_DATA(response.data.articles)),
       )
       .then(() => setLoading(false))
       .catch(err => ToastAndroid.show(err.message, ToastAndroid.SHORT));
+    setModalVisible(false);
   };
+
   const filterData: INews[] = listData?.filter((item: INews) => {
     return item.title.toLowerCase().indexOf(text.toLowerCase()) !== -1;
   });
+
   const handleScroll = (e: any): void => {
     const length: number = listData?.length;
     const scrollPosition = e.nativeEvent.contentOffset.y;
@@ -157,19 +170,23 @@ const Home: FC<Props> = ({navigation}) => {
               transform: [{translateY: translateY}],
             },
           ]}>
-          {/* <Ionicons
-            name="search"
-            size={22}
-            color={'#5C5C66'}
-            style={styles.icon}
-          /> */}
-          <View style={{alignItems: 'center'}}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
             <TextInput
               keyboardType={'default'}
               onChangeText={txt => setText(txt)}
               style={[styles.textInputContact, {backgroundColor: '#ebebeb'}]}
               value={text}
             />
+            <TouchableOpacity
+              onPress={() => setModalVisible(true)}
+              style={{width: 60}}>
+              <MaterialCommunity
+                name="arrow-down-drop-circle"
+                size={28}
+                color={'#5C5C66'}
+                style={styles.icon}
+              />
+            </TouchableOpacity>
           </View>
         </Animated.View>
         <View style={{top: 10}}></View>
@@ -211,6 +228,74 @@ const Home: FC<Props> = ({navigation}) => {
             </View>
           )}
         </View>
+        {isModalVisible == true && (
+          <Modal
+            transparent={true}
+            isVisible={isModalVisible}
+            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <View style={styles.wrapper}>
+              <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+                <View style={styles.countryWrapper}>
+                  <View
+                    style={{
+                      height: 40,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        color: '#000',
+                      }}>
+                      Country List
+                    </Text>
+                  </View>
+                  <ScrollView style={{marginTop: 10}}>
+                    {countryCode.map((data, index) => (
+                      <View key={index}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            setCountry(data);
+                            fetchNews(data);
+                          }}
+                          key={index}
+                          style={{
+                            flexDirection: 'row',
+                            // padding: 8,
+                            height: 25,
+                            left: width / 4.2,
+                          }}>
+                          <Text
+                            style={[
+                              {
+                                fontSize: 14,
+                                color: data == country ? 'red' : 'black',
+                                textAlign: 'center',
+                              },
+                            ]}>
+                            {data.toUpperCase()}
+                          </Text>
+
+                          {/* <Image source={require('./../../assets/chevronForward.png')} /> */}
+                        </TouchableOpacity>
+                        <View style={styles.footer} />
+                      </View>
+                    ))}
+                  </ScrollView>
+                  <TouchableOpacity
+                    onPress={() => setModalVisible(false)}
+                    style={{
+                      flex: 1,
+                      justifyContent: 'flex-end',
+                      marginBottom: 12,
+                    }}>
+                    <Text style={styles.cancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </Modal>
+        )}
       </View>
     </>
   );
@@ -228,6 +313,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
+  },
+  footer: {
+    height: 0.5,
+    backgroundColor: '#CACAD8',
+    width: width * 0.9,
+    justifyContent: 'center',
+    marginTop: 5,
   },
 
   button: {
@@ -268,6 +360,14 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  wrapper: {
+    backgroundColor: '#000000aa',
+    alignItems: 'center',
+    // flex: 1,
+    justifyContent: 'center',
+    // alignSelf: 'center',
+    height: height * 1.1,
+  },
   image: {
     height: 150,
     width: 100,
@@ -279,6 +379,11 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+  },
+  cancelText: {
+    textAlign: 'center',
+    color: '#D23B4B',
+    fontSize: 17,
   },
   searchStockStyle: {
     height: 40,
@@ -298,6 +403,21 @@ const styles = StyleSheet.create({
     top: 14,
     zIndex: 10,
     // paddingBottom: 20,
+  },
+  icon: {
+    position: 'absolute',
+    zIndex: 99,
+    left: 10,
+    top: 5,
+  },
+  countryWrapper: {
+    height: height / 1.5,
+    backgroundColor: '#FFFFFF',
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: width * 0.5,
+    borderRadius: 20,
   },
 });
 export default Home;
